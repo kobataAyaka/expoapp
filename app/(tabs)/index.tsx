@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Index() {
@@ -10,22 +11,45 @@ export default function Index() {
     const defaultLineColor = '#000000';
     const errorLineColor = '#FF0000';
 
-    const addWord = () => {
+    const loadWordList = async () => {
+        try {
+            const storedWordList = await AsyncStorage.getItem('wordList');
+            if (storedWordList) {
+                setWordList(JSON.parse(storedWordList));
+            }
+        } catch (error) {
+            console.error('Error loading data', error);
+        }
+    };
+    // 컴포넌트가 마운트될 때 단어 목록을 불러옵니다.
+    useEffect(() => {
+        loadWordList();
+    }, []);
+
+    const addWord = async () => {
         if (word.trim() !== '' && meaning.trim() !== '') {
-            setWordList([...wordList, { word, meaning }]);
+            const newWordList = [...wordList, { word, meaning }];
+            setWordList(newWordList);
             setWord('');
             setMeaning('');
             setLineColor(defaultLineColor); // 성공 시 선 색상 초기화
+
+            try {
+                await AsyncStorage.setItem('wordList', JSON.stringify(newWordList));
+            } catch (error) {
+                console.error('Error saving data', error);
+            }
         } else {
             setLineColor(errorLineColor); // 입력 오류 시 선 색상 변경
             alert('단어와 뜻을 모두 입력하세요');
         }
     };
 
-    const removeWord = (index: number) => {
+    const removeWord = async (index: number) => {
         const newWordList = [...wordList];
         newWordList.splice(index, 1);
         setWordList(newWordList);
+        await AsyncStorage.setItem('wordList', JSON.stringify(newWordList));
     };
 
     return (
