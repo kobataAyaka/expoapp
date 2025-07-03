@@ -1,7 +1,9 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Key, useEffect, useState } from 'react';
+import { Key, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 
 export default function Quiz() {
   const [wordList, setWordList] = useState<{ word: string; meaning: string }[]>([]);
@@ -10,22 +12,24 @@ export default function Quiz() {
   const [isLoading, setIsLoading] = useState(true);
 
   // 영속화된 단어 목록을 불러오기
-  useEffect(() => {
-    const loadWordList = async () => {
-      try {
-        const storedWordList = await AsyncStorage.getItem('wordList');
-        if (storedWordList) {
-          setWordList(JSON.parse(storedWordList));
+  useFocusEffect(
+    useCallback(() => {
+      const loadWordList = async () => {
+        try {
+          const storedWordList = await AsyncStorage.getItem('wordList');
+          if (storedWordList) {
+            setWordList(JSON.parse(storedWordList));
+          }
+        } catch (error) {
+          console.error('Error loading word list:', error);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error loading word list:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    loadWordList();
-  }, []);
+      loadWordList();
+    }, [])
+  );
 
   // 문제 생성 함수
   function generateQuestion() {
