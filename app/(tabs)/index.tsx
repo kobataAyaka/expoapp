@@ -1,15 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Appbar, Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 
 export default function Index() {
     const [word, setWord] = useState('');
     const [meaning, setMeaning] = useState('');
-    const [lineColor, setLineColor] = useState('#000000'); // 선 색상 상태
     const [wordList, setWordList] = useState<{ word: string; meaning: string }[]>([]);
-
-    const defaultLineColor = '#000000';
-    const errorLineColor = '#FF0000';
+    const [isError, setIsError] = useState(false);
+    const theme = useTheme();
 
     const loadWordList = async () => {
         try {
@@ -21,7 +20,7 @@ export default function Index() {
             console.error('Error loading data', error);
         }
     };
-    // 컴포넌트가 마운트될 때 단어 목록을 불러옵니다.
+
     useEffect(() => {
         loadWordList();
     }, []);
@@ -32,7 +31,7 @@ export default function Index() {
             setWordList(newWordList);
             setWord('');
             setMeaning('');
-            setLineColor(defaultLineColor); // 성공 시 선 색상 초기화
+            setIsError(false);
 
             try {
                 await AsyncStorage.setItem('wordList', JSON.stringify(newWordList));
@@ -40,7 +39,7 @@ export default function Index() {
                 console.error('Error saving data', error);
             }
         } else {
-            setLineColor(errorLineColor); // 입력 오류 시 선 색상 변경
+            setIsError(true);
             alert('단어와 뜻을 모두 입력하세요');
         }
     };
@@ -53,50 +52,57 @@ export default function Index() {
     };
 
     return (
-        <View style={styles.container}>
-            <Text>새로은 단어를 입력하세요</Text>
-            <TextInput
-                placeholder="영단어"
-                value={word}
-                onChangeText={(text) => {
-                    setWord(text);
-                    setLineColor(defaultLineColor); // 입력 시작 시 선 색상 초기화
-                }}
-                style={{
-                    borderWidth: 1,
-                    width: 200,
-                    marginBottom: 10,
-                    padding: 5,
-                    borderColor: lineColor, // 상태에 따라 선 색상 변경
-                }}
-            />
-            <TextInput
-                placeholder="한국어 뜻"
-                value={meaning}
-                onChangeText={(text) => {
-                    setMeaning(text);
-                    setLineColor(defaultLineColor); // 입력 시작 시 선 색상 초기화
-                }}
-                style={{
-                    borderWidth: 1,
-                    width: 200,
-                    marginBottom: 10,
-                    padding: 5,
-                    borderColor: lineColor, // 상태에 따라 선 색상 변경
-                }}
-            />
-            <Button title="추가" onPress={addWord} />
-            <FlatList
-                data={wordList}
-                renderItem={({ item, index }) => (
-                    <View style={styles.wordItem}>
-                        <Text style={styles.wordText}>{item.word}</Text>
-                        <Text style={styles.meaningText}>{item.meaning}</Text>
-                        <Button title="삭제" onPress={() => removeWord(index)} />
-                    </View>
-                )}
-                keyExtractor={(item, index) => index.toString()}
-            />
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <Appbar.Header>
+                <Appbar.Content title="단어장" />
+            </Appbar.Header>
+            <View style={styles.content}>
+                <Card style={styles.card}>
+                    <Card.Content>
+                        <TextInput
+                            label="영단어"
+                            value={word}
+                            onChangeText={(text) => {
+                                setWord(text);
+                                setIsError(false);
+                            }}
+                            style={styles.input}
+                            error={isError}
+                        />
+                        <TextInput
+                            label="한국어 뜻"
+                            value={meaning}
+                            onChangeText={(text) => {
+                                setMeaning(text);
+                                setIsError(false);
+                            }}
+                            style={styles.input}
+                            error={isError}
+                        />
+                    </Card.Content>
+                    <Card.Actions>
+                        <Button mode="contained" onPress={addWord} style={styles.button}>
+                            추가
+                        </Button>
+                    </Card.Actions>
+                </Card>
+                <FlatList
+                    data={wordList}
+                    renderItem={({ item, index }) => (
+                        <Card style={styles.wordCard}>
+                            <Card.Content style={styles.wordItem}>
+                                <Text variant="titleMedium">{item.word}</Text>
+                                <Text variant="bodyMedium" style={styles.meaningText}>
+                                    {item.meaning}
+                                </Text>
+                                <Button icon="delete" onPress={() => removeWord(index)} />
+                            </Card.Content>
+                        </Card>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                    style={styles.list}
+                />
+            </View>
         </View>
     );
 }
@@ -104,21 +110,32 @@ export default function Index() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+    },
+    content: {
+        flex: 1,
+        padding: 16,
+    },
+    card: {
+        marginBottom: 16,
+    },
+    input: {
+        marginBottom: 10,
+    },
+    button: {
+        marginLeft: 'auto',
+    },
+    list: {
+        flex: 1,
+    },
+    wordCard: {
+        marginBottom: 8,
     },
     wordItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
-    },
-    wordText: {
-        fontSize: 16,
-        marginRight: 10,
+        justifyContent: 'space-between',
     },
     meaningText: {
-        fontSize: 16,
         color: 'gray',
-        marginRight: 10,
     },
 });
