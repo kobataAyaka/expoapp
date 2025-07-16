@@ -1,24 +1,34 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, Text } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Icon, useTheme } from 'react-native-paper';
 
-interface GradientButtonProps {
+// textかiconのどちらか一方が必須となるように型を定義
+type GradientButtonProps = {
     onPress: () => void;
-    text: string;
-}
+} & ({ text: string; icon?: never; } | { text?: never; icon: string; });
 
-export default function GradientButton({ onPress, text }: GradientButtonProps) {
+export default function GradientButton({ onPress, text, icon }: GradientButtonProps) {
     const theme = useTheme();
+
+    // アイコンボタンの場合は円形にするためのスタイルを動的に適用
+    const buttonStyle: ViewStyle[] = [styles.button];
+    if (icon) {
+        buttonStyle.push(styles.iconButton);
+    }
 
     return (
         <Pressable onPress={onPress}>
             <LinearGradient
                 colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
-                start={{ x: 0, y: 0 }} // 左上から開始
-                end={{ x: 1, y: 1 }}   // 右下で終了
-                style={styles.button}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={buttonStyle}
             >
-                <Text style={styles.text}>{text}</Text>
+                {icon ? (
+                    <Icon source={icon} size={24} color="#FFFFFF" />
+                ) : (
+                    <Text style={styles.text}>{text}</Text>
+                )}
             </LinearGradient>
         </Pressable>
     );
@@ -31,6 +41,10 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    iconButton: {
+        padding: 10, // アイコン用のパディング
+        borderRadius: 50, // 円形にする
     },
     text: {
         color: '#FFFFFF',

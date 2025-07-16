@@ -94,7 +94,7 @@ export default function Index() {
                                 <Text variant="bodyMedium" style={styles.meaningText}>
                                     {item.meaning}
                                 </Text>
-                                <Button icon="delete" onPress={() => removeWord(index)} children={undefined} />
+                                <GradientButton icon="delete" onPress={() => removeWord(index)} />
                             </Card.Content>
                         </Card>
                     )}
