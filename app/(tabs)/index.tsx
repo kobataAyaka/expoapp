@@ -95,7 +95,7 @@ export default function Index() {
                                 <Text variant="bodyMedium" style={styles.meaningText}>
                                     {item.meaning}
                                 </Text>
-                                <Button icon="delete" onPress={() => removeWord(index)} />
+                                <Button icon="delete" onPress={() => removeWord(index)} children={undefined} />
                             </Card.Content>
                         </Card>
                     )}
@@ -121,9 +121,7 @@ const styles = StyleSheet.create({
     input: {
         marginBottom: 10,
     },
-    button: {
-        marginLeft: 'auto',
-    },
+    
     list: {
         flex: 1,
     },
