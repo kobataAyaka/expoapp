@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
+import GradientButton from '../../components/GradientButton';
 
 export default function Index() {
     const [word, setWord] = useState('');
@@ -81,9 +82,7 @@ export default function Index() {
                         />
                     </Card.Content>
                     <Card.Actions>
-                        <Button mode="contained" onPress={addWord} style={styles.button}>
-                            추가
-                        </Button>
+                        <GradientButton onPress={addWord} text="추가" />
                     </Card.Actions>
                 </Card>
                 <FlatList
@@ -121,7 +120,6 @@ const styles = StyleSheet.create({
     input: {
         marginBottom: 10,
     },
-    
     list: {
         flex: 1,
     },
